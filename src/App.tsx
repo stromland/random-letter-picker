@@ -3,32 +3,38 @@ import { Button, Carousel } from "react-bootstrap";
 import "./App.css";
 import { letters } from "./letters";
 
-function randomLetter(
-  set: (letter: number) => void,
-  setLast: (last: boolean) => void
+function getRandomIndex(
+  onIndex: (index: number) => void,
+  onLast: () => void,
+  maxIndex: number = 29,
+  numberOfRounds: number = 5,
+  displayTime: number = 4000
 ) {
-  const numberOfLetters = 5;
-  const timeOfShow = 4000;
-  const cache: Set<number> = new Set();
+  const selectedIndexes: Set<number> = new Set();
 
-  setLast(false);
-  const index = Math.floor(Math.random() * 29);
-  cache.add(index);
-  set(index);
+  const first = Math.floor(Math.random() * maxIndex);
+  selectedIndexes.add(first);
+  onIndex(first);
+
+  let rounds = 0;
 
   const inter = setInterval(() => {
-    let chosen: number | undefined;
-    do {
-      chosen = Math.floor(Math.random() * 29);
-      cache.add(chosen);
-    } while (!cache.has(chosen));
-    set(chosen);
-  }, timeOfShow);
+    let next: number | undefined;
+    while (next === undefined) {
+      const choosen = Math.floor(Math.random() * 29);
+      if (selectedIndexes.has(choosen)) {
+        continue;
+      }
+      selectedIndexes.add(choosen);
+      next = choosen;
+    }
 
-  setTimeout(() => {
-    clearInterval(inter);
-    setLast(true);
-  }, timeOfShow * numberOfLetters + timeOfShow / 2);
+    onIndex(next);
+    if (++rounds === numberOfRounds) {
+      setTimeout(() => onLast(), displayTime / 2);
+      clearInterval(inter);
+    }
+  }, displayTime);
 }
 
 function App() {
@@ -40,12 +46,12 @@ function App() {
 }
 
 function Letters() {
-  const [letter, setLetter] = useState<number>();
-  const [last, setLast] = useState(false);
+  const [index, setIndex] = useState<number>();
+  const [isLast, setIsLast] = useState(false);
   return (
     <Carousel
       interval={null}
-      activeIndex={letter ?? 29}
+      activeIndex={index ?? 29}
       indicators={false}
       controls={false}
     >
@@ -57,7 +63,7 @@ function Letters() {
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
-              background: last ? "#697F3F" : "#C4502A",
+              background: isLast ? "#697F3F" : "#C4502A",
             }}
           >
             <h1 style={{ fontSize: "200px" }}>{it}</h1>
@@ -76,7 +82,7 @@ function Letters() {
         >
           <Button
             style={{ fontSize: "80px" }}
-            onClick={() => randomLetter(setLetter, setLast)}
+            onClick={() => getRandomIndex(setIndex, () => setIsLast(true))}
           >
             Start
           </Button>
