@@ -1,0 +1,28 @@
+name: Build
+on:
+  push:
+    branches-ignore:
+      - "main"
+  workflow_call:
+
+jobs:
+  react:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js 16
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+        cache: 'npm'
+        
+    - run: npm ci
+    - run: npm run build
+    - run: npm run test --if-present
+
+    - name: Upload vue-version artifact
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: ./build
