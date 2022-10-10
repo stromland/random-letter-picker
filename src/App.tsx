@@ -20,14 +20,11 @@ function getRandomIndex(
 
   const inter = setInterval(() => {
     let next: number | undefined;
-    while (next === undefined) {
-      const choosen = Math.floor(Math.random() * 29);
-      if (selectedIndexes.has(choosen)) {
-        continue;
-      }
-      selectedIndexes.add(choosen);
-      next = choosen;
-    }
+    do {
+      next = Math.floor(Math.random() * maxIndex);
+    } while (selectedIndexes.has(next));
+
+    selectedIndexes.add(next);
 
     onIndex(next);
     if (++rounds === numberOfRounds) {
