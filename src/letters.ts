@@ -29,3 +29,11 @@ export const letters = [
   "Ø",
   "Å",
 ];
+
+export const letterSettings = letters.reduce(
+  (acc, next) => ({
+    ...acc,
+    [next]: true,
+  }),
+  {} as Record<string, boolean>
+);

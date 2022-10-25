@@ -1,0 +1,26 @@
+.letter-item {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.letter-item-settings {
+  background: #f0e6c8;
+}
+
+.letter-item-start {
+  text-align: center;
+  background: #f0e6c8;
+}
+
+.letter-item-option {
+  text-align: center;
+  background: #c4502a;
+}
+
+.letter-item-selected {
+  text-align: center;
+  background: #697f3f;
+  align-items: center;
+}

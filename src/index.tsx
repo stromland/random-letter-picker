@@ -2,7 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { Layout } from "./components/Layout";
 import { LetterCarousel } from "./containers/LetterCarousel";
-import { letters } from "./letters";
+import { letterSettings } from "./letters";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./index.css";
 
@@ -12,7 +13,7 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <Layout>
-      <LetterCarousel letters={letters} />
+      <LetterCarousel letters={letterSettings} />
     </Layout>
   </React.StrictMode>
 );
