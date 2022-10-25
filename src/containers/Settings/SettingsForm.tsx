@@ -46,19 +46,19 @@ export function SettingsForm(props: Props) {
         <Row className="justify-content-md-center">
           <Col lg="2"></Col>
 
-          <Col xs lg="4" className="mb-3">
-            <h1>Innstillinger</h1>
+          <Col xs lg="4" className="mt-3">
+            <div style={{ height: "50px" }}></div>
           </Col>
         </Row>
-        <Row>
+        <Row className="justify-content-md-center">
           <Col lg="3"></Col>
 
-          <Col xs lg="3" className="mb-3">
+          <Col xs lg="6" className="mb-3" style={{ textAlign: "center" }}>
             <h2>
-              <i className="bi bi-list-check"></i> Bokstaver
+              <i className="bi bi-list-check"></i> Velg bokstaver
             </h2>
-            <blockquote>Velg bokstaver som kan bli valgt.</blockquote>
           </Col>
+          <Col lg="3"></Col>
         </Row>
         <Row className="justify-content-md-center">
           <LetterCol onChange={onChange} letters={first} />
@@ -115,6 +115,7 @@ function LetterCol(props: LetterColProps) {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        marginLeft: "-1.3rem",
       }}
     >
       {props.letters.map(([letter, checked]) => (
