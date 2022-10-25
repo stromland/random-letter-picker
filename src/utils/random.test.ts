@@ -40,6 +40,7 @@ describe("getRandomIndexAndWait", () => {
     const onIndex = jest.fn();
     const onLast = jest.fn();
 
+    const minIndex = 0;
     const maxIndex = 10;
     const minRounds = 0;
     const maxRounds = 10;
@@ -48,6 +49,7 @@ describe("getRandomIndexAndWait", () => {
     random.getRandomIndexAndWait(
       onIndex,
       onLast,
+      minIndex,
       maxIndex,
       minRounds,
       maxRounds,
