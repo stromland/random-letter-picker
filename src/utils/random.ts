@@ -22,7 +22,7 @@ export function getRandomIndexAndWait(
   const numberOfIndexes = maxIndex - minIndex + 1;
   let rounds = 1;
 
-  let hasSelectedAll = numberOfIndexes === 0;
+  let hasSelectedAll = numberOfIndexes <= selectedIndexes.size;
 
   // Next rounds
   const inter = setInterval(() => {
