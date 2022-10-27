@@ -1,9 +1,9 @@
 import { useCallback, useState } from "react";
-import { Button, Carousel } from "react-bootstrap";
+import { Alert, Button, Carousel } from "react-bootstrap";
 import { getRandomIndexAndWait } from "../../utils/random";
 import styles from "./LetterCarousel.module.css";
 import { SettingsForm } from "../Settings/SettingsForm";
-import { useLocalStorage } from "./useLocalStorage";
+import { useLocalStorage } from "../../hooks/useLocalStorage";
 
 type LetterCarouselProps = {
   letters: Record<string, boolean>;
@@ -18,7 +18,7 @@ const indexes = {
 export function LetterCarousel(props: LetterCarouselProps) {
   const [selectedIndex, setSelectedIndex] = useState<number>(indexes.start);
   const [isLast, setIsLast] = useState(false);
-  const storage = useLocalStorage(props.letters);
+  const storage = useLocalStorage();
 
   const letters = Object.entries(storage.letters)
     .filter(([, active]) => active)
@@ -46,14 +46,7 @@ export function LetterCarousel(props: LetterCarouselProps) {
           data-testid={`carousel-item-settings`}
           className={classnames.settings}
         >
-          <SettingsForm
-            letters={storage.letters}
-            onAbort={() => setSelectedIndex(indexes.start)}
-            onSave={(options) => {
-              storage.save(options.letters);
-              setSelectedIndex(indexes.start);
-            }}
-          />
+          <SettingsForm onComplete={() => setSelectedIndex(indexes.start)} />
         </div>
       </Carousel.Item>
       <Carousel.Item>

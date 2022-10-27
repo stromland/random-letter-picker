@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+  Alert,
   Button,
   ButtonGroup,
   Col,
@@ -7,25 +8,21 @@ import {
   Form,
   Row,
 } from "react-bootstrap";
-
-interface SaveOptions {
-  letters: Record<string, boolean>;
-}
+import { useLocalStorage } from "../../hooks/useLocalStorage";
 
 type Props = {
-  letters: Record<string, boolean>;
-  onSave: (options: SaveOptions) => void;
-  onAbort: () => void;
+  onComplete: () => void;
 };
 
 export function SettingsForm(props: Props) {
+  const storage = useLocalStorage();
   const [selectedLetters, setSelectedLetters] = useState<
     Record<string, boolean>
   >({});
 
   useEffect(() => {
-    setSelectedLetters(props.letters);
-  }, [props.letters]);
+    setSelectedLetters(storage.letters);
+  }, [storage.letters]);
 
   const onChange = useCallback(
     (letter: string, checked: boolean) => {
@@ -37,6 +34,9 @@ export function SettingsForm(props: Props) {
     [selectedLetters]
   );
 
+  const validSettings =
+    Object.values(selectedLetters).length === 0 ||
+    Object.values(selectedLetters).filter((it) => it).length > 0;
   const first = Object.entries(selectedLetters).slice(0, 10);
   const second = Object.entries(selectedLetters).slice(10, 20);
   const third = Object.entries(selectedLetters).slice(20);
@@ -57,6 +57,9 @@ export function SettingsForm(props: Props) {
             <h2>
               <i className="bi bi-list-check"></i> Velg bokstaver
             </h2>
+            <AlertDismissibleExample title="Ugyldig" show={!validSettings}>
+              Ingen bokstaver er valgt. Velg minst 1 bokstav.
+            </AlertDismissibleExample>
           </Col>
           <Col lg="3"></Col>
         </Row>
@@ -78,14 +81,23 @@ export function SettingsForm(props: Props) {
             <ButtonGroup style={{ width: "100%" }}>
               <Button
                 variant="dark"
-                onClick={props.onAbort}
+                onClick={() => {
+                  setSelectedLetters(storage.letters);
+                  props.onComplete();
+                }}
                 style={{ width: "100%" }}
               >
                 Avbryt
               </Button>
               <Button
                 variant="primary"
-                onClick={() => props.onSave({ letters: selectedLetters })}
+                disabled={!validSettings}
+                onClick={() => {
+                  if (validSettings) {
+                    storage.save(selectedLetters);
+                    props.onComplete();
+                  }
+                }}
                 style={{ width: "100%" }}
               >
                 Lagre
@@ -136,4 +148,23 @@ function LetterCol(props: LetterColProps) {
       ))}
     </Col>
   );
+}
+
+type AlertProps = {
+  title: string;
+  show: boolean;
+  children: React.ReactNode;
+};
+
+function AlertDismissibleExample(props: AlertProps) {
+  if (props.show) {
+    return (
+      <Alert variant="danger">
+        <Alert.Heading>{props.title}</Alert.Heading>
+        {props.children}
+      </Alert>
+    );
+  }
+
+  return null;
 }
