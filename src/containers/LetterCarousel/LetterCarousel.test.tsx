@@ -1,6 +1,5 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { letterSettings } from "../../letters";
 import { classnames, LetterCarousel } from "./LetterCarousel";
 
 describe("LetterCarousel", () => {
@@ -16,7 +15,7 @@ describe("LetterCarousel", () => {
       .mockReturnValueOnce(0.3) // second - I
       .mockReturnValueOnce(0.4) // third - L
       .mockReturnValueOnce(0.2); // fourth - F
-    render(<LetterCarousel letters={letterSettings} />);
+    render(<LetterCarousel />);
 
     expect(screen.getByText("Start")).toBeEnabled();
     userEvent.click(screen.getByText("Start"));

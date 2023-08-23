@@ -8,21 +8,20 @@ import {
   Form,
   Row,
 } from "react-bootstrap";
-import { useLocalStorage } from "../../hooks/useLocalStorage";
+import * as storage from "../../hooks/useLocalStorage";
 
 type Props = {
   onComplete: () => void;
 };
 
 export function SettingsForm(props: Props) {
-  const storage = useLocalStorage();
   const [selectedLetters, setSelectedLetters] = useState<
     Record<string, boolean>
   >({});
 
   useEffect(() => {
-    setSelectedLetters(storage.letters);
-  }, [storage.letters]);
+    setSelectedLetters(storage.getLetters());
+  }, []);
 
   const onChange = useCallback(
     (letter: string, checked: boolean) => {
@@ -82,7 +81,7 @@ export function SettingsForm(props: Props) {
               <Button
                 variant="dark"
                 onClick={() => {
-                  setSelectedLetters(storage.letters);
+                  setSelectedLetters(storage.getLetters());
                   props.onComplete();
                 }}
                 style={{ width: "100%" }}
@@ -94,7 +93,7 @@ export function SettingsForm(props: Props) {
                 disabled={!validSettings}
                 onClick={() => {
                   if (validSettings) {
-                    storage.save(selectedLetters);
+                    storage.saveLetters(selectedLetters);
                     props.onComplete();
                   }
                 }}

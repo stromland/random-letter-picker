@@ -1,13 +1,9 @@
 import { useCallback, useState } from "react";
-import { Alert, Button, Carousel } from "react-bootstrap";
+import { Button, Carousel } from "react-bootstrap";
 import { getRandomIndexAndWait } from "../../utils/random";
 import styles from "./LetterCarousel.module.css";
 import { SettingsForm } from "../Settings/SettingsForm";
-import { useLocalStorage } from "../../hooks/useLocalStorage";
-
-type LetterCarouselProps = {
-  letters: Record<string, boolean>;
-};
+import * as storage from "../../hooks/useLocalStorage";
 
 const indexes = {
   settings: 0,
@@ -15,17 +11,17 @@ const indexes = {
   letterStart: 2,
 };
 
-export function LetterCarousel(props: LetterCarouselProps) {
+export function LetterCarousel() {
   const [selectedIndex, setSelectedIndex] = useState<number>(indexes.start);
   const [isLast, setIsLast] = useState(false);
-  const storage = useLocalStorage();
 
-  const letters = Object.entries(storage.letters)
+  const letters = Object.entries(storage.getLetters())
     .filter(([, active]) => active)
     .map(([letter]) => letter);
 
   const start = useCallback(() => {
     setIsLast(false);
+    // TODO: Minimum 5 letters
     getRandomIndexAndWait(
       setSelectedIndex,
       setIsLast,
@@ -33,6 +29,8 @@ export function LetterCarousel(props: LetterCarouselProps) {
       indexes.letterStart + letters.length - 1
     );
   }, [letters.length]);
+
+  console.log(letters);
 
   return (
     <Carousel
