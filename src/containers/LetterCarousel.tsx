@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { Button, Carousel } from "react-bootstrap";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { getRandomIndexAndWait } from "../utils/random";
@@ -71,7 +71,7 @@ export function LetterCarousel(props: LetterCarouselProps) {
           </Button>
         </div>
       </Carousel.Item>
-      {letters.map((it, index) => (
+      {letters.map((it) => (
         <Carousel.Item data-testid={`carousel-item-${it}`} key={it}>
           <div
             data-testid={`carousel-item-${it}-wrapper`}
