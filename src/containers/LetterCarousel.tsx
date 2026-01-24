@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Button, Carousel } from "react-bootstrap";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import { getRandomIndexAndWait } from "../utils/random";
 import styles from "./LetterCarousel.module.css";
 import { SettingsForm } from "./Settings/SettingsForm";
@@ -13,32 +14,6 @@ const indexes = {
   start: 1,
   letterStart: 2,
 };
-
-function useLocalStorage(init: Record<string, boolean>) {
-  const LETTERS_KEY = "letters";
-  const [letters, setLetters] = useState<Record<string, boolean>>({});
-
-  const save = useCallback((data: Record<string, boolean>) => {
-    const strData = JSON.stringify(data);
-    window.localStorage.setItem(LETTERS_KEY, strData);
-    setLetters(data);
-  }, []);
-
-  useEffect(() => {
-    const data = window.localStorage.getItem(LETTERS_KEY);
-    if (data) {
-      const parsed: Record<string, boolean> = JSON.parse(data);
-      setLetters(parsed);
-    } else {
-      save(init);
-      setLetters(init);
-    }
-  }, [init, save]);
-
-  const hasBeenSaved = Object.keys(letters).length > 0;
-
-  return { letters, save, hasBeenSaved };
-}
 
 export function LetterCarousel(props: LetterCarouselProps) {
   const [selectedIndex, setSelectedIndex] = useState<number>(indexes.start);

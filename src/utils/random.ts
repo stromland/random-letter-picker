@@ -11,6 +11,12 @@ export function getRandomIndexAndWait(
   maxNumberOfRounds: number = 7,
   waitDuration: number = 4000
 ) {
+  // Guard against invalid range
+  if (maxIndex < minIndex) {
+    console.warn('getRandomIndexAndWait called with invalid range: maxIndex < minIndex');
+    return;
+  }
+
   const selectedIndexes: Set<number> = new Set();
   const numberOfRounds = getRandomInt(minNumberOfRounds, maxNumberOfRounds);
 
