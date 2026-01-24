@@ -3,6 +3,11 @@ import { vi } from "vitest";
 import { letterSettings } from "../letters";
 import { classnames, LetterCarousel } from "./LetterCarousel";
 
+// Mock canvas-confetti since jsdom doesn't support canvas context
+vi.mock("canvas-confetti", () => ({
+  default: vi.fn(),
+}));
+
 describe("LetterCarousel", () => {
   afterEach(() => {
     vi.restoreAllMocks();

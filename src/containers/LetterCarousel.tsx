@@ -1,4 +1,5 @@
-import { useCallback, useState } from "react";
+import confetti from "canvas-confetti";
+import { useCallback, useEffect, useState } from "react";
 import { Button, Carousel } from "react-bootstrap";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { getRandomIndexAndWait } from "../utils/random";
@@ -24,6 +25,40 @@ export function LetterCarousel(props: LetterCarouselProps) {
     .filter(([, active]) => active)
     .map(([letter]) => letter);
 
+  // Trigger confetti when final letter is revealed
+  useEffect(() => {
+    if (isLast) {
+      // Fire confetti celebration
+      const duration = 800;
+      const end = Date.now() + duration;
+
+      const frame = () => {
+        confetti({
+          particleCount: 3,
+          angle: 60,
+          spread: 50,
+          ticks: 150,
+          origin: { x: 0, y: 0.6 },
+          colors: ["#ff6b6b", "#4ecdc4", "#ffe66d", "#95e1d3", "#f38181"],
+        });
+        confetti({
+          particleCount: 3,
+          angle: 120,
+          spread: 50,
+          ticks: 150,
+          origin: { x: 1, y: 0.6 },
+          colors: ["#ff6b6b", "#4ecdc4", "#ffe66d", "#95e1d3", "#f38181"],
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      };
+
+      frame();
+    }
+  }, [isLast]);
+
   const start = useCallback(() => {
     setIsLast(false);
     const maxIndex = letters.length - 1;
@@ -31,7 +66,7 @@ export function LetterCarousel(props: LetterCarouselProps) {
       setSelectedIndex,
       setIsLast,
       indexes.letterStart,
-      maxIndex + indexes.letterStart
+      maxIndex + indexes.letterStart,
     );
   }, [letters.length]);
 
