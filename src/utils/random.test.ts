@@ -72,7 +72,7 @@ describe("getRandomIndexAndWait", () => {
     expect(randomMock).toHaveBeenCalledTimes(4);
     expect(onIndex).toHaveBeenCalledWith(2);
 
-    // Wait half duraiton to call onLast
+    // Wait half duration to call onLast
     const halfDuration = waitDuration / 2;
     vi.advanceTimersByTime(halfDuration - 100);
     expect(onLast).not.toHaveBeenCalled();

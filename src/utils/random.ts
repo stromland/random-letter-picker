@@ -48,6 +48,12 @@ export function getRandomIndexAndWait(
       // If all allowed have been shown, pick from all allowed
       const pickFrom = availableFinalIndexes.length > 0 ? availableFinalIndexes : allowedFinalIndexes;
       next = pickFrom[getRandomInt(0, pickFrom.length - 1)];
+    } else if (isLastRound && allowedFinalIndexes && allowedFinalIndexes.length === 0) {
+      // Guard: if allowedFinalIndexes is provided but empty, log warning and pick from all
+      console.warn('allowedFinalIndexes is empty. Falling back to random selection from all indexes.');
+      do {
+        next = getRandomInt(minIndex, maxIndex);
+      } while (selectedIndexes.has(next));
     } else {
       // Regular round: pick from all indexes
       do {

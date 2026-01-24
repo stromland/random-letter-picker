@@ -33,10 +33,11 @@ export function useLocalStorage(defaultValue: Record<string, boolean>) {
         window.localStorage.setItem(LETTERS_KEY, JSON.stringify(merged));
       }
     } else {
-      save(defaultValue);
+      const strData = JSON.stringify(defaultValue);
+      window.localStorage.setItem(LETTERS_KEY, strData);
       setLetters(defaultValue);
     }
-  }, [defaultValue, save]);
+  }, [defaultValue]);
 
   const hasBeenSaved = Object.keys(letters).length > 0;
 
