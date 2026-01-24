@@ -21,78 +21,63 @@ export function LetterCarousel(props: LetterCarouselProps) {
   const [selectedIndex, setSelectedIndex] = useState<number>(indexes.start);
   const [isLast, setIsLast] = useState(false);
   const hasHandledLastRef = useRef(false);
-  const confettiFrameRef = useRef<number | null>(null);
   const storage = useLocalStorage(props.letters);
   const { letters: storageLetters, save: storageSave } = storage;
 
-  // Trigger confetti and disable the picked letter when final letter is revealed
+  // Trigger confetti when final letter is revealed
   useEffect(() => {
     if (isLast && !hasHandledLastRef.current) {
       hasHandledLastRef.current = true;
 
       // Fire confetti celebration
-      const duration = 800;
-      const end = Date.now() + duration;
+      const colors = ["#ff6b6b", "#4ecdc4", "#ffe66d", "#95e1d3", "#f38181"];
 
-      const frame = () => {
-        confetti({
-          particleCount: 3,
-          angle: 60,
-          spread: 50,
-          ticks: 150,
-          origin: { x: 0, y: 0.6 },
-          colors: ["#ff6b6b", "#4ecdc4", "#ffe66d", "#95e1d3", "#f38181"],
+      confetti({
+        particleCount: 80,
+        angle: 60,
+        spread: 70,
+        startVelocity: 55,
+        origin: { x: 0, y: 0.7 },
+        colors,
+      });
+      confetti({
+        particleCount: 80,
+        angle: 120,
+        spread: 70,
+        startVelocity: 55,
+        origin: { x: 1, y: 0.7 },
+        colors,
+      });
+    }
+  }, [isLast]);
+
+  // Disable the picked letter when final letter is revealed
+  useEffect(() => {
+    if (!isLast) return;
+
+    const pickedLetterIndex = selectedIndex - indexes.letterStart;
+    const pickedLetter = allLetters[pickedLetterIndex];
+
+    if (pickedLetter) {
+      const enabledCount = Object.values(storageLetters).filter(Boolean).length;
+
+      if (enabledCount <= 1) {
+        // Reset all letters to enabled
+        const allEnabled = Object.keys(storageLetters).reduce(
+          (acc, key) => ({ ...acc, [key]: true }),
+          {} as Record<string, boolean>,
+        );
+        storageSave(allEnabled);
+      } else {
+        // Disable the picked letter
+        storageSave({
+          ...storageLetters,
+          [pickedLetter]: false,
         });
-        confetti({
-          particleCount: 3,
-          angle: 120,
-          spread: 50,
-          ticks: 150,
-          origin: { x: 1, y: 0.6 },
-          colors: ["#ff6b6b", "#4ecdc4", "#ffe66d", "#95e1d3", "#f38181"],
-        });
-
-        if (Date.now() < end) {
-          confettiFrameRef.current = requestAnimationFrame(frame);
-        } else {
-          confettiFrameRef.current = null;
-        }
-      };
-
-      frame();
-
-      // Disable the picked letter immediately
-      const pickedLetterIndex = selectedIndex - indexes.letterStart;
-      const pickedLetter = allLetters[pickedLetterIndex];
-
-      if (pickedLetter) {
-        const enabledCount = Object.values(storageLetters).filter(Boolean).length;
-
-        if (enabledCount <= 1) {
-          // Reset all letters to enabled
-          const allEnabled = Object.keys(storageLetters).reduce(
-            (acc, key) => ({ ...acc, [key]: true }),
-            {} as Record<string, boolean>
-          );
-          storageSave(allEnabled);
-        } else {
-          // Disable the picked letter
-          storageSave({
-            ...storageLetters,
-            [pickedLetter]: false,
-          });
-        }
       }
     }
-
-    // Cleanup function to cancel animation frame if component unmounts
-    return () => {
-      if (confettiFrameRef.current !== null) {
-        cancelAnimationFrame(confettiFrameRef.current);
-        confettiFrameRef.current = null;
-      }
-    };
-  }, [isLast, selectedIndex, storageLetters, storageSave]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLast, selectedIndex]);
 
   const start = useCallback(() => {
     setIsLast(false);
@@ -100,12 +85,14 @@ export function LetterCarousel(props: LetterCarouselProps) {
 
     // Get current enabled letter indexes for final pick constraint
     const currentEnabledIndexes = allLetters
-      .map((letter, index) => (storageLetters[letter] ? index + indexes.letterStart : -1))
+      .map((letter, index) =>
+        storageLetters[letter] ? index + indexes.letterStart : -1,
+      )
       .filter((index) => index !== -1);
 
     // Guard against empty enabled letters (shouldn't happen due to validation, but handle gracefully)
     if (currentEnabledIndexes.length === 0) {
-      console.warn('No enabled letters available. Cannot start letter picker.');
+      console.warn("No enabled letters available. Cannot start letter picker.");
       return;
     }
 
