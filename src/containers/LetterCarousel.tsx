@@ -21,7 +21,9 @@ export function LetterCarousel(props: LetterCarouselProps) {
   const [selectedIndex, setSelectedIndex] = useState<number>(indexes.start);
   const [isLast, setIsLast] = useState(false);
   const hasHandledLastRef = useRef(false);
+  const confettiFrameRef = useRef<number | null>(null);
   const storage = useLocalStorage(props.letters);
+  const { letters: storageLetters, save: storageSave } = storage;
 
   // Trigger confetti and disable the picked letter when final letter is revealed
   useEffect(() => {
@@ -51,7 +53,9 @@ export function LetterCarousel(props: LetterCarouselProps) {
         });
 
         if (Date.now() < end) {
-          requestAnimationFrame(frame);
+          confettiFrameRef.current = requestAnimationFrame(frame);
+        } else {
+          confettiFrameRef.current = null;
         }
       };
 
@@ -62,25 +66,33 @@ export function LetterCarousel(props: LetterCarouselProps) {
       const pickedLetter = allLetters[pickedLetterIndex];
 
       if (pickedLetter) {
-        const enabledCount = Object.values(storage.letters).filter(Boolean).length;
+        const enabledCount = Object.values(storageLetters).filter(Boolean).length;
 
         if (enabledCount <= 1) {
           // Reset all letters to enabled
-          const allEnabled = Object.keys(storage.letters).reduce(
+          const allEnabled = Object.keys(storageLetters).reduce(
             (acc, key) => ({ ...acc, [key]: true }),
             {} as Record<string, boolean>
           );
-          storage.save(allEnabled);
+          storageSave(allEnabled);
         } else {
           // Disable the picked letter
-          storage.save({
-            ...storage.letters,
+          storageSave({
+            ...storageLetters,
             [pickedLetter]: false,
           });
         }
       }
     }
-  }, [isLast, selectedIndex, storage]);
+
+    // Cleanup function to cancel animation frame if component unmounts
+    return () => {
+      if (confettiFrameRef.current !== null) {
+        cancelAnimationFrame(confettiFrameRef.current);
+        confettiFrameRef.current = null;
+      }
+    };
+  }, [isLast, selectedIndex, storageLetters, storageSave]);
 
   const start = useCallback(() => {
     setIsLast(false);
@@ -88,8 +100,14 @@ export function LetterCarousel(props: LetterCarouselProps) {
 
     // Get current enabled letter indexes for final pick constraint
     const currentEnabledIndexes = allLetters
-      .map((letter, index) => (storage.letters[letter] ? index + indexes.letterStart : -1))
+      .map((letter, index) => (storageLetters[letter] ? index + indexes.letterStart : -1))
       .filter((index) => index !== -1);
+
+    // Guard against empty enabled letters (shouldn't happen due to validation, but handle gracefully)
+    if (currentEnabledIndexes.length === 0) {
+      console.warn('No enabled letters available. Cannot start letter picker.');
+      return;
+    }
 
     const maxIndex = allLetters.length - 1 + indexes.letterStart;
     getRandomIndexAndWait(
@@ -99,7 +117,7 @@ export function LetterCarousel(props: LetterCarouselProps) {
       maxIndex,
       currentEnabledIndexes,
     );
-  }, [storage.letters]);
+  }, [storageLetters]);
 
   return (
     <Carousel
@@ -114,10 +132,10 @@ export function LetterCarousel(props: LetterCarouselProps) {
           className={classnames.settings}
         >
           <SettingsForm
-            letters={storage.letters}
+            letters={storageLetters}
             onAbort={() => setSelectedIndex(indexes.start)}
             onSave={(options) => {
-              storage.save(options.letters);
+              storageSave(options.letters);
               setSelectedIndex(indexes.start);
             }}
           />
