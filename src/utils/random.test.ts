@@ -53,6 +53,7 @@ describe("getRandomIndexAndWait", () => {
       onLast,
       minIndex,
       maxIndex,
+      undefined, // allowedFinalIndexes
       minRounds,
       maxRounds,
       waitDuration
@@ -91,6 +92,7 @@ describe("getRandomIndexAndWait", () => {
       onLast,
       5, // minIndex
       2, // maxIndex (invalid: less than minIndex)
+      undefined, // allowedFinalIndexes
       4,
       7,
       1000
@@ -127,6 +129,7 @@ describe("getRandomIndexAndWait", () => {
       onLast,
       0,
       10,
+      undefined, // allowedFinalIndexes
       2, // minNumberOfRounds
       2, // maxNumberOfRounds
       1000
@@ -146,17 +149,19 @@ describe("getRandomIndexAndWait", () => {
     expect(onLast).toHaveBeenCalledWith(true);
   });
 
-  it("should stop early when all indexes have been selected", () => {
+  it("should allow repeats when all indexes have been selected", () => {
     vi.useFakeTimers();
 
-    // With only 3 possible indexes (0, 1, 2), selecting all should stop early
+    // With only 3 possible indexes (0, 1, 2), after selecting all, it should reset and allow repeats
+    // getRandomInt(4, 7) with Math.random = 0: result = floor(0 * 4 + 4) = 4 rounds
     // getRandomInt(0, 2) with Math.random values:
-    // 0 -> 0, 0.33 -> 1, 0.66 -> 2
+    // 0 -> 0, 0.4 -> 1, 0.9 -> 2
     vi.spyOn(Math, "random")
-      .mockReturnValueOnce(0.9) // numberOfRounds = 7 (high, more than available indexes)
+      .mockReturnValueOnce(0) // numberOfRounds = 4
       .mockReturnValueOnce(0) // First index: 0
       .mockReturnValueOnce(0.4) // Second index: 1
-      .mockReturnValueOnce(0.9); // Third index: 2
+      .mockReturnValueOnce(0.9) // Third index: 2 (all selected, set resets)
+      .mockReturnValueOnce(0); // Fourth index: 0 (repeat allowed)
 
     const onIndex = vi.fn();
     const onLast = vi.fn();
@@ -166,7 +171,8 @@ describe("getRandomIndexAndWait", () => {
       onLast,
       0,
       2, // Only 3 possible indexes: 0, 1, 2
-      4, // minNumberOfRounds (more than available indexes)
+      undefined, // allowedFinalIndexes
+      4, // minNumberOfRounds
       7, // maxNumberOfRounds
       1000
     );
@@ -180,10 +186,15 @@ describe("getRandomIndexAndWait", () => {
     expect(onIndex).toHaveBeenCalledTimes(2);
     expect(onIndex).toHaveBeenCalledWith(1);
 
-    // Third round - should trigger hasSelectedAll and stop (rounds = 3)
+    // Third round (rounds = 3) - all selected, set resets for next round
     vi.advanceTimersByTime(1000);
     expect(onIndex).toHaveBeenCalledTimes(3);
     expect(onIndex).toHaveBeenCalledWith(2);
+
+    // Fourth round (rounds = 4) - repeat allowed after reset, completes at numberOfRounds
+    vi.advanceTimersByTime(1000);
+    expect(onIndex).toHaveBeenCalledTimes(4);
+    expect(onIndex).toHaveBeenCalledWith(0);
 
     // Should call onLast after half duration (500ms)
     vi.advanceTimersByTime(500);
@@ -191,6 +202,51 @@ describe("getRandomIndexAndWait", () => {
 
     // No more callbacks after this
     vi.advanceTimersByTime(5000);
+    expect(onIndex).toHaveBeenCalledTimes(4);
+  });
+
+  it("should pick final round from allowedFinalIndexes only", () => {
+    vi.useFakeTimers();
+
+    // 10 possible indexes (0-9), but only indexes 2, 5, 8 are allowed for final pick
+    // With 3 rounds, the final (3rd) round should pick from [2, 5, 8]
+    vi.spyOn(Math, "random")
+      .mockReturnValueOnce(0) // numberOfRounds = 3
+      .mockReturnValueOnce(0) // First index: 0
+      .mockReturnValueOnce(0.3) // Second index: 3
+      .mockReturnValueOnce(0.5); // Third (final) index: picks from [2, 5, 8], index 1 = 5
+
+    const onIndex = vi.fn();
+    const onLast = vi.fn();
+
+    random.getRandomIndexAndWait(
+      onIndex,
+      onLast,
+      0,
+      9, // 10 possible indexes: 0-9
+      [2, 5, 8], // allowedFinalIndexes
+      3, // minNumberOfRounds
+      3, // maxNumberOfRounds
+      1000
+    );
+
+    // First round (rounds = 1)
+    expect(onIndex).toHaveBeenCalledTimes(1);
+    expect(onIndex).toHaveBeenCalledWith(0);
+
+    // Second round (rounds = 2)
+    vi.advanceTimersByTime(1000);
+    expect(onIndex).toHaveBeenCalledTimes(2);
+    expect(onIndex).toHaveBeenCalledWith(3);
+
+    // Third (final) round - should pick from allowedFinalIndexes [2, 5, 8]
+    // With random 0.5 and pickFrom.length = 3: getRandomInt(0, 2) = floor(0.5 * 3) = 1 -> index 5
+    vi.advanceTimersByTime(1000);
     expect(onIndex).toHaveBeenCalledTimes(3);
+    expect(onIndex).toHaveBeenCalledWith(5);
+
+    // Should call onLast after half duration (500ms)
+    vi.advanceTimersByTime(500);
+    expect(onLast).toHaveBeenCalledWith(true);
   });
 });

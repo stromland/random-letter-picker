@@ -1,7 +1,8 @@
 import confetti from "canvas-confetti";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Carousel } from "react-bootstrap";
 import { useLocalStorage } from "../hooks/useLocalStorage";
+import { letters as allLetters } from "../letters";
 import { getRandomIndexAndWait } from "../utils/random";
 import styles from "./LetterCarousel.module.css";
 import { SettingsForm } from "./Settings/SettingsForm";
@@ -19,15 +20,14 @@ const indexes = {
 export function LetterCarousel(props: LetterCarouselProps) {
   const [selectedIndex, setSelectedIndex] = useState<number>(indexes.start);
   const [isLast, setIsLast] = useState(false);
+  const hasHandledLastRef = useRef(false);
   const storage = useLocalStorage(props.letters);
 
-  const letters = Object.entries(storage.letters)
-    .filter(([, active]) => active)
-    .map(([letter]) => letter);
-
-  // Trigger confetti when final letter is revealed
+  // Trigger confetti and disable the picked letter when final letter is revealed
   useEffect(() => {
-    if (isLast) {
+    if (isLast && !hasHandledLastRef.current) {
+      hasHandledLastRef.current = true;
+
       // Fire confetti celebration
       const duration = 800;
       const end = Date.now() + duration;
@@ -56,23 +56,54 @@ export function LetterCarousel(props: LetterCarouselProps) {
       };
 
       frame();
+
+      // Disable the picked letter immediately
+      const pickedLetterIndex = selectedIndex - indexes.letterStart;
+      const pickedLetter = allLetters[pickedLetterIndex];
+
+      if (pickedLetter) {
+        const enabledCount = Object.values(storage.letters).filter(Boolean).length;
+
+        if (enabledCount <= 1) {
+          // Reset all letters to enabled
+          const allEnabled = Object.keys(storage.letters).reduce(
+            (acc, key) => ({ ...acc, [key]: true }),
+            {} as Record<string, boolean>
+          );
+          storage.save(allEnabled);
+        } else {
+          // Disable the picked letter
+          storage.save({
+            ...storage.letters,
+            [pickedLetter]: false,
+          });
+        }
+      }
     }
-  }, [isLast]);
+  }, [isLast, selectedIndex, storage]);
 
   const start = useCallback(() => {
     setIsLast(false);
-    const maxIndex = letters.length - 1;
+    hasHandledLastRef.current = false;
+
+    // Get current enabled letter indexes for final pick constraint
+    const currentEnabledIndexes = allLetters
+      .map((letter, index) => (storage.letters[letter] ? index + indexes.letterStart : -1))
+      .filter((index) => index !== -1);
+
+    const maxIndex = allLetters.length - 1 + indexes.letterStart;
     getRandomIndexAndWait(
       setSelectedIndex,
       setIsLast,
       indexes.letterStart,
-      maxIndex + indexes.letterStart,
+      maxIndex,
+      currentEnabledIndexes,
     );
-  }, [letters.length]);
+  }, [storage.letters]);
 
   return (
     <Carousel
-      activeIndex={selectedIndex ?? letters.length}
+      activeIndex={selectedIndex ?? allLetters.length}
       interval={null}
       indicators={false}
       controls={false}
@@ -106,7 +137,7 @@ export function LetterCarousel(props: LetterCarouselProps) {
           </Button>
         </div>
       </Carousel.Item>
-      {letters.map((it) => (
+      {allLetters.map((it) => (
         <Carousel.Item data-testid={`carousel-item-${it}`} key={it}>
           <div
             data-testid={`carousel-item-${it}-wrapper`}
