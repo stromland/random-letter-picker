@@ -35,5 +35,5 @@ export const letterSettings = letters.reduce(
     ...acc,
     [next]: true,
   }),
-  {} as Record<string, boolean>
+  {} as Record<string, boolean>,
 );

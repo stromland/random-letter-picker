@@ -56,7 +56,7 @@ describe("getRandomIndexAndWait", () => {
       undefined, // allowedFinalIndexes
       minRounds,
       maxRounds,
-      waitDuration
+      waitDuration,
     );
     // Get rounds and first index/round
     expect(randomMock).toHaveBeenCalledTimes(2);
@@ -95,14 +95,14 @@ describe("getRandomIndexAndWait", () => {
       undefined, // allowedFinalIndexes
       4,
       7,
-      1000
+      1000,
     );
 
     // Should not call any callbacks
     expect(onIndex).not.toHaveBeenCalled();
     expect(onLast).not.toHaveBeenCalled();
     expect(consoleSpy).toHaveBeenCalledWith(
-      "getRandomIndexAndWait called with invalid range: maxIndex < minIndex"
+      "getRandomIndexAndWait called with invalid range: maxIndex < minIndex",
     );
 
     // Advance timers to ensure no intervals are running
@@ -132,7 +132,7 @@ describe("getRandomIndexAndWait", () => {
       undefined, // allowedFinalIndexes
       2, // minNumberOfRounds
       2, // maxNumberOfRounds
-      1000
+      1000,
     );
 
     // First round is called immediately (rounds = 1)
@@ -174,7 +174,7 @@ describe("getRandomIndexAndWait", () => {
       undefined, // allowedFinalIndexes
       4, // minNumberOfRounds
       7, // maxNumberOfRounds
-      1000
+      1000,
     );
 
     // First round (rounds = 1)
@@ -227,7 +227,7 @@ describe("getRandomIndexAndWait", () => {
       [2, 5, 8], // allowedFinalIndexes
       3, // minNumberOfRounds
       3, // maxNumberOfRounds
-      1000
+      1000,
     );
 
     // First round (rounds = 1)

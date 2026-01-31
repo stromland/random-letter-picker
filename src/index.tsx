@@ -12,5 +12,5 @@ createRoot(document.getElementById("root")!).render(
     <Layout>
       <LetterCarousel letters={letterSettings} />
     </Layout>
-  </StrictMode>
+  </StrictMode>,
 );

@@ -10,11 +10,13 @@ export function getRandomIndexAndWait(
   allowedFinalIndexes?: number[],
   minNumberOfRounds: number = 4,
   maxNumberOfRounds: number = 7,
-  waitDuration: number = 4000
+  waitDuration: number = 4000,
 ) {
   // Guard against invalid range
   if (maxIndex < minIndex) {
-    console.warn('getRandomIndexAndWait called with invalid range: maxIndex < minIndex');
+    console.warn(
+      "getRandomIndexAndWait called with invalid range: maxIndex < minIndex",
+    );
     return;
   }
 
@@ -43,14 +45,23 @@ export function getRandomIndexAndWait(
     if (isLastRound && allowedFinalIndexes && allowedFinalIndexes.length > 0) {
       // Final round: pick from allowed indexes only
       const availableFinalIndexes = allowedFinalIndexes.filter(
-        (idx) => !selectedIndexes.has(idx)
+        (idx) => !selectedIndexes.has(idx),
       );
       // If all allowed have been shown, pick from all allowed
-      const pickFrom = availableFinalIndexes.length > 0 ? availableFinalIndexes : allowedFinalIndexes;
+      const pickFrom =
+        availableFinalIndexes.length > 0
+          ? availableFinalIndexes
+          : allowedFinalIndexes;
       next = pickFrom[getRandomInt(0, pickFrom.length - 1)];
-    } else if (isLastRound && allowedFinalIndexes && allowedFinalIndexes.length === 0) {
+    } else if (
+      isLastRound &&
+      allowedFinalIndexes &&
+      allowedFinalIndexes.length === 0
+    ) {
       // Guard: if allowedFinalIndexes is provided but empty, log warning and pick from all
-      console.warn('allowedFinalIndexes is empty. Falling back to random selection from all indexes.');
+      console.warn(
+        "allowedFinalIndexes is empty. Falling back to random selection from all indexes.",
+      );
       do {
         next = getRandomInt(minIndex, maxIndex);
       } while (selectedIndexes.has(next));
