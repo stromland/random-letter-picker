@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Alert,
   Button,
@@ -22,26 +22,19 @@ type Props = {
 export function SettingsForm(props: Props) {
   const [selectedLetters, setSelectedLetters] = useState<
     Record<string, boolean>
-  >({});
-
-  useEffect(() => {
-    setSelectedLetters(props.letters);
-  }, [props.letters]);
+  >(props.letters);
 
   const hasSelectedAny = useMemo(
     () => Object.values(selectedLetters).some((selected) => selected),
-    [selectedLetters]
+    [selectedLetters],
   );
 
-  const onChange = useCallback(
-    (letter: string, checked: boolean) => {
-      setSelectedLetters((prev) => ({
-        ...prev,
-        [letter]: checked,
-      }));
-    },
-    []
-  );
+  const onChange = useCallback((letter: string, checked: boolean) => {
+    setSelectedLetters((prev) => ({
+      ...prev,
+      [letter]: checked,
+    }));
+  }, []);
 
   const first = Object.entries(selectedLetters).slice(0, 10);
   const second = Object.entries(selectedLetters).slice(10, 20);
@@ -74,9 +67,7 @@ export function SettingsForm(props: Props) {
         {!hasSelectedAny && (
           <Row className="justify-content-md-center">
             <Col xs lg="6">
-              <Alert variant="warning">
-                Minst én bokstav må være valgt
-              </Alert>
+              <Alert variant="warning">Minst én bokstav må være valgt</Alert>
             </Col>
           </Row>
         )}

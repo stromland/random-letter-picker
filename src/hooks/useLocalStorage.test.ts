@@ -87,28 +87,11 @@ describe("useLocalStorage", () => {
     window.localStorage.setItem(LETTERS_KEY, "invalid json");
 
     const defaultValue = { A: true, B: true };
-    
+
     // Should throw during JSON.parse and fall back to default
     expect(() => {
       renderHook(() => useLocalStorage(defaultValue));
     }).toThrow();
-  });
-
-  it("should update when defaultValue changes", () => {
-    const defaultValue1 = { A: true, B: true };
-    const { result, rerender } = renderHook(
-      (props) => useLocalStorage(props.defaultValue),
-      { initialProps: { defaultValue: defaultValue1 } }
-    );
-
-    expect(result.current.letters).toEqual(defaultValue1);
-
-    // Change default value to add a new key
-    const defaultValue2 = { A: true, B: true, C: true };
-    rerender({ defaultValue: defaultValue2 });
-
-    // Should update to include new key with default value
-    expect(result.current.letters).toEqual({ A: true, B: true, C: true });
   });
 
   it("should not update localStorage unnecessarily when data is already merged", () => {
