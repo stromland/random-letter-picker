@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
+  Alert,
   Button,
   ButtonGroup,
   Col,
@@ -21,21 +22,19 @@ type Props = {
 export function SettingsForm(props: Props) {
   const [selectedLetters, setSelectedLetters] = useState<
     Record<string, boolean>
-  >({});
+  >(props.letters);
 
-  useEffect(() => {
-    setSelectedLetters(props.letters);
-  }, [props.letters]);
-
-  const onChange = useCallback(
-    (letter: string, checked: boolean) => {
-      setSelectedLetters({
-        ...selectedLetters,
-        [letter]: checked,
-      });
-    },
-    [selectedLetters]
+  const hasSelectedAny = useMemo(
+    () => Object.values(selectedLetters).some((selected) => selected),
+    [selectedLetters],
   );
+
+  const onChange = useCallback((letter: string, checked: boolean) => {
+    setSelectedLetters((prev) => ({
+      ...prev,
+      [letter]: checked,
+    }));
+  }, []);
 
   const first = Object.entries(selectedLetters).slice(0, 10);
   const second = Object.entries(selectedLetters).slice(10, 20);
@@ -65,6 +64,13 @@ export function SettingsForm(props: Props) {
           <LetterCol onChange={onChange} letters={second} />
           <LetterCol onChange={onChange} letters={third} />
         </Row>
+        {!hasSelectedAny && (
+          <Row className="justify-content-md-center">
+            <Col xs lg="6">
+              <Alert variant="warning">Minst én bokstav må være valgt</Alert>
+            </Col>
+          </Row>
+        )}
         <Row className="justify-content-md-center mb-10">
           <Col
             xs
@@ -87,6 +93,7 @@ export function SettingsForm(props: Props) {
                 variant="primary"
                 onClick={() => props.onSave({ letters: selectedLetters })}
                 style={{ width: "100%" }}
+                disabled={!hasSelectedAny}
               >
                 Lagre
               </Button>
