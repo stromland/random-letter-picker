@@ -20,6 +20,7 @@ const indexes = {
 export function LetterCarousel(props: LetterCarouselProps) {
   const [selectedIndex, setSelectedIndex] = useState<number>(indexes.start);
   const [isLast, setIsLast] = useState(false);
+  const [settingsVersion, setSettingsVersion] = useState(0);
   const hasHandledLastRef = useRef(false);
   const storage = useLocalStorage(props.letters);
   const { letters: storageLetters, save: storageSave } = storage;
@@ -75,6 +76,7 @@ export function LetterCarousel(props: LetterCarouselProps) {
           [pickedLetter]: false,
         });
       }
+      setSettingsVersion((v) => v + 1);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLast, selectedIndex]);
@@ -119,6 +121,7 @@ export function LetterCarousel(props: LetterCarouselProps) {
           className={classnames.settings}
         >
           <SettingsForm
+            key={settingsVersion}
             letters={storageLetters}
             onAbort={() => setSelectedIndex(indexes.start)}
             onSave={(options) => {
