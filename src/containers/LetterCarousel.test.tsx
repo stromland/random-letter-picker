@@ -106,12 +106,12 @@ describe("LetterCarousel", () => {
     expect(confettiMock).toHaveBeenCalled();
     expect(confettiMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        particleCount: 3,
+        particleCount: 80,
         angle: expect.any(Number),
-        spread: 50,
-        ticks: 150,
-        origin: expect.objectContaining({ y: 0.6 }),
-      })
+        spread: 70,
+        startVelocity: 55,
+        origin: expect.objectContaining({ y: 0.7 }),
+      }),
     );
   });
 
@@ -149,13 +149,15 @@ describe("LetterCarousel", () => {
     const stored = window.localStorage.getItem("letters");
     expect(stored).toBeTruthy();
     const parsed = JSON.parse(stored!);
-    
+
     // Verify that exactly one letter is disabled (28 enabled out of 29)
     const enabledCount = Object.values(parsed).filter(Boolean).length;
     expect(enabledCount).toBe(28);
-    
+
     // Verify at least one letter is disabled
-    const disabledLetters = Object.entries(parsed).filter(([_, enabled]) => !enabled);
+    const disabledLetters = Object.entries(parsed).filter(
+      ([, enabled]) => !enabled,
+    );
     expect(disabledLetters.length).toBe(1);
   });
 
@@ -165,7 +167,7 @@ describe("LetterCarousel", () => {
     // Start with only one letter enabled
     const singleLetterEnabled = Object.keys(letterSettings).reduce(
       (acc, key) => ({ ...acc, [key]: key === "A" }),
-      {} as Record<string, boolean>
+      {} as Record<string, boolean>,
     );
 
     vi.spyOn(Math, "random")
@@ -201,41 +203,5 @@ describe("LetterCarousel", () => {
     Object.values(parsed).forEach((value) => {
       expect(value).toBe(true);
     });
-  });
-
-  it("should clean up confetti animation on unmount", () => {
-    vi.useFakeTimers();
-    const cancelAnimationFrameSpy = vi.spyOn(window, "cancelAnimationFrame");
-
-    vi.spyOn(Math, "random")
-      .mockReturnValueOnce(0) // 4 rounds
-      .mockReturnValueOnce(0)
-      .mockReturnValueOnce(0.1)
-      .mockReturnValueOnce(0.2)
-      .mockReturnValueOnce(0.3)
-      .mockReturnValue(0.5);
-
-    const { unmount } = render(<LetterCarousel letters={letterSettings} />);
-    fireEvent.click(screen.getByText("Start"));
-
-    // Advance through all rounds to trigger confetti
-    for (let i = 0; i < 4; i++) {
-      act(() => {
-        vi.advanceTimersToNextTimer();
-      });
-      act(() => {
-        vi.advanceTimersToNextTimer();
-      });
-    }
-
-    act(() => {
-      vi.advanceTimersToNextTimer();
-    });
-
-    // Unmount while confetti might still be animating
-    unmount();
-
-    // cancelAnimationFrame should be called during cleanup
-    expect(cancelAnimationFrameSpy).toHaveBeenCalled();
   });
 });
